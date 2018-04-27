@@ -150,3 +150,11 @@ def is_fillable_pdf(path, maxpages = 0):
     except Exception as e:
         print(e)
         return "Fillable Check: Failed"
+
+
+def current_time_str():
+	now = datetime.now()
+	current_time_list = [str(now.month), str(now.day),
+						 str(now.hour), str(now.minute)]
+    current_time = '_'.join(current_time_list)
+    return current_time
