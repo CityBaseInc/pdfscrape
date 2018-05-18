@@ -20,6 +20,9 @@ import random
 
 
 def pdf_num_pages(open_pdf = None, path = None):
+	'''
+	Get the number of pages in the PDF document.
+	'''
 	try:
 		if path:
 			open_pdf = open(path, 'rb')
@@ -33,6 +36,10 @@ def pdf_num_pages(open_pdf = None, path = None):
 
 def convert_pdf_to_txt(path, maxpages = 0, sample_base = 0, random_sample_size = 0):
     '''
+	Scrape text data from a PDF with the ability to set a max number of pages,
+	and for larger documents, setting the number of pages to take from the
+	beginning of the document and the option to take a sample set from the
+	remaining pages.
 	'''
     try:
         rsrcmgr = PDFResourceManager()
@@ -66,14 +73,16 @@ def convert_pdf_to_txt(path, maxpages = 0, sample_base = 0, random_sample_size =
         print(e)
         return None, "Failed"
 
+
 def load_pdf_urls(filename, limit = None):
     '''
-	Helper function for creating dataframe from a csv list of PDFs.
+	Helper function for creating a dataframe from a csv list of PDFs.
 	'''
     pdf_links_df = pd.read_csv(filename)
     if limit:
         pdf_links_df = pdf_links_df.copy()[:limit]
     return pdf_links_df
+
 
 def download_pdf(url, directory = './data/', temp = False):
     '''
@@ -106,6 +115,8 @@ def download_pdf(url, directory = './data/', temp = False):
 
 def download_and_scrape_pdf(url, maxpages=0, sample_base = 0, random_sample_size = 0):
     '''
+	Composite function joining the ability to download and scrape a PDF in one
+	command.
     '''
     download_status = download_pdf(url, directory = './data/temp/', temp = True)
     print("Now on:", url)
@@ -121,7 +132,11 @@ def download_and_scrape_pdf(url, maxpages=0, sample_base = 0, random_sample_size
         print("Scrape: Success")
         return text, 'Scrape: Success'
 
+
 def is_fillable_page(page):
+	'''
+	Helper function used to indicate whether a page is fillable.
+	'''
     assert isinstance( page, PDFPage ), 'This is not a PDFPage.'
     if isinstance( page.annots, PDFObjRef ):
         for annot in page.annots.resolve():
@@ -138,6 +153,10 @@ def is_fillable_page(page):
 
 
 def is_fillable_pdf(path, maxpages = 0):
+	'''
+	Takes a PDF and indicates whether the scraped pages are fillable. Set
+	maxpages to check the first couple of pages from the beginning of the PDF.
+	'''
     fp = open(path, 'rb')
     try:
         pages = list(PDFPage.get_pages(fp, maxpages = maxpages))
@@ -153,6 +172,10 @@ def is_fillable_pdf(path, maxpages = 0):
 
 
 def current_time_str():
+	'''
+	Helper function to get the time and date, used for filenames to prevent
+	overwriting.
+	'''
 	now = datetime.now()
 	current_time_list = [str(now.month), str(now.day),
 						 str(now.hour), str(now.minute)]

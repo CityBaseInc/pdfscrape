@@ -18,6 +18,7 @@ class PDFPipeline(object):
 	'''
 	Simple pipeline for scraping PDFs from the internet given a list of PDF
 	urls. Pipeline includes ability to load scraped data into a database.
+	Specify the database to connect to with a "credentials.json".
 	'''
 	def __init__(self, pdf_urls_path, limit=None, creds = 'credentials.json'):
 		self.pdfurls = load_pdf_urls(pdf_urls_path, limit=limit)
@@ -28,6 +29,19 @@ class PDFPipeline(object):
 
 	def scrape_pdfs(self, maxpages, base, random_sample, sep = '`'):
 		'''
+		Downloads and scrapes information from each PDF, allowing to specify the
+		max number of pages to scrape, how many to scrape from the beginning of
+		the document, and how many pages to take as a random sample from the
+		rest of the document. The data are exported as a csv with the following
+		columns:
+			- pdf_id - unique identifier for the pdf document
+			- pdf_url - url for the PDF
+			- dl_status - indicator of whether PDF downloaded successfully
+			- scrape_status - indicator of whether the PDF scraped successfully
+			- num_pages - number of pages in the entire document
+			- num_pages_scraped - number of pages scraped from the document
+			- is_fillable - indicates whether any pages in PDF are fillable
+			- text - the text scraped from each of the scraped pages
 		'''
 		path = './data/temp/temp.pdf'
 		pdfs = self.pdfurls[['pdf_id','pdf_url']].values.tolist()
@@ -66,5 +80,8 @@ class PDFPipeline(object):
 
 
 	def load_in_db(self, table_name, sep = '`'):
+		'''
+		Load the exported scrape data into a database table.
+		'''
 		self.db_conn.create_table(csv_file = self.scrape_file,
 								  table_name = table_name, sep = sep)
