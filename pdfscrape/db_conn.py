@@ -7,14 +7,14 @@ in miscellaneous ways with the database.
 @author Vidal Anguiano Jr.
 '''
 import pandas as pd
+from pandas import read_sql_query
 import csv, ast, psycopg2
 import os
 import json
-from vatools.src.util import *
 from pandas_profiling import ProfileReport
 
 
-class DB_Connection(object):
+class DBConnection(object):
     '''
     DB_Connection is a way to initialize a connection to a database and easily
     interact with it with simple functions to query data, create a table, and
@@ -73,7 +73,7 @@ class DB_Connection(object):
         print(cur.fetchall())
 
 
-    def create_table(self, csv_file, table_name, insert = True, sep = ','):
+    def create_table(self, csv_file, table_name, insert = True, sep = ',', override_edits = False):
         '''
         Takes a csv file and automatically detects field types and produces an
         initial Schema DDL, and finally loads the data from the csv file into
@@ -88,7 +88,7 @@ class DB_Connection(object):
         try:
             cur.execute('drop table if exists {};'.format(table_name))
             conn.commit()
-            statement = create_ddl(csv_file, table_name)
+            statement = create_ddl(csv_file, table_name, override_edits)
             cur.execute(statement)
             print("{} created successfully!".format(table_name))
 
@@ -104,7 +104,7 @@ class DB_Connection(object):
             conn.close()
 
 
-    def create_table_from_df(self, df, table_name, sep = ','):
+    def create_table_from_df(self, df, table_name, sep = ',', override_edits = False):
         '''
         Function to load data from a pandas DataFrame into the data base.
         Inputs:
@@ -112,7 +112,7 @@ class DB_Connection(object):
             - table_name (str): name to give the table where data will be loaded
         '''
         df.to_csv('./temp.csv', index=False, sep=sep)
-        self.create_table('temp.csv', table_name, insert=True)
+        self.create_table('temp.csv', table_name, insert=True, sep = sep,override_edits=override_edits)
         os.remove('./temp.csv')
 
     def profile(self, table_name):
@@ -147,7 +147,7 @@ def dataType(val, current_type):
         return 'VARCHAR'
 
 
-def create_ddl(file_path, table_name):
+def create_ddl(file_path, table_name, override_edits = False):
     '''
     Helper function to create a DDL statement.
     '''
@@ -188,13 +188,15 @@ def create_ddl(file_path, table_name):
 
     print(statement)
     edit = ''
+
+
     while edit not in ['Y', 'N']:
+        if override_edits:
+            return make_edits(statement, 'N')
         edit = input('Do you want to make any changes? Y/N ').upper()
         edit = edit.upper()
 
-    statement = make_edits(statement, edit)
-
-    return statement
+    return make_edits(statement, edit)
 
 
 def make_edits(statement, edit):

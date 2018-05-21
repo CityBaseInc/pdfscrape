@@ -8,10 +8,10 @@ import urllib
 import pandas as pd
 import csv
 import random
-from src.pdf_utils import *
+import pdfscrape.pdf_utils as pu
 from datetime import datetime
 import time
-from src.db_conn import DB_Connection
+from pdfscrape.db_conn import DBConnection
 
 
 class PDFPipeline(object):
@@ -20,14 +20,18 @@ class PDFPipeline(object):
 	urls. Pipeline includes ability to load scraped data into a database.
 	Specify the database to connect to with a "credentials.json".
 	'''
-	def __init__(self, pdf_urls_path, limit=None, creds = 'credentials.json'):
-		self.pdfurls = load_pdf_urls(pdf_urls_path, limit=limit)
-		self.num_pdfs = len(self.pdfurls)
+	def __init__(self, pdf_links, limit=None, creds = 'credentials.json'):
+		self.db_conn = DBConnection(creds)
+		self.db_conn.connect()
 		self.scrape_filename = None
-		self.db_conn = DB_Connection(creds)
+		if '.csv' in pdf_links:
+			self.pdfurls = load_pdf_urls(pdf_urls_path, limit=limit)
+		else:
+			self.pdfurls = self.db_conn.query('select * from {}'.format(pdf_links))
+		self.num_pdfs = len(self.pdfurls)
 
 
-	def scrape_pdfs(self, maxpages, base, random_sample, sep = '`'):
+	def scrape_pdfs(self, maxpages, base, random_sample, sep = ','):
 		'''
 		Downloads and scrapes information from each PDF, allowing to specify the
 		max number of pages to scrape, how many to scrape from the beginning of
@@ -43,9 +47,9 @@ class PDFPipeline(object):
 			- is_fillable - indicates whether any pages in PDF are fillable
 			- text - the text scraped from each of the scraped pages
 		'''
-		path = './data/temp/temp.pdf'
+		path = '../data/temp/temp.pdf'
 		pdfs = self.pdfurls[['pdf_id','pdf_url']].values.tolist()
-		scrape_file = './data/scrapes/pdf_scrape_' + current_time_str() + '.csv'
+		scrape_file = '../data/scrapes/pdf_scrape_' + pu.current_time_str() + '.csv'
 		self.scrape_file = scrape_file
 		with open(scrape_file, "w", newline='\n') as f:
 			writer = csv.writer(f, delimiter = sep)
@@ -57,13 +61,13 @@ class PDFPipeline(object):
 				url = pdf[1]
 				print(url)
 				try:
-					dl_status = download_pdf(url, directory = './data/temp/',
+					dl_status = pu.download_pdf(url, directory = '../data/temp/',
 												  temp = True)
 					if dl_status == 'Success':
-						fillable = is_fillable_pdf(path, maxpages)
-						text, scrape_status = convert_pdf_to_txt(path, maxpages,
+						fillable = pu.is_fillable_pdf(path, maxpages)
+						text, scrape_status = pu.convert_pdf_to_txt(path, maxpages,
 															base, random_sample)
-						num_pages = pdf_num_pages(path = path)
+						num_pages = pu.pdf_num_pages(path = path)
 						if num_pages < maxpages:
 							num_pages_scraped = num_pages
 						else:
@@ -79,7 +83,7 @@ class PDFPipeline(object):
 					writer.writerow([pdf_id, url, 'Error', e])
 
 
-	def load_in_db(self, table_name, sep = '`'):
+	def load_in_db(self, table_name, sep = ','):
 		'''
 		Load the exported scrape data into a database table.
 		'''

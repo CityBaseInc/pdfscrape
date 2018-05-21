@@ -118,12 +118,12 @@ def download_and_scrape_pdf(url, maxpages=0, sample_base = 0, random_sample_size
 	Composite function joining the ability to download and scrape a PDF in one
 	command.
     '''
-    download_status = download_pdf(url, directory = './data/temp/', temp = True)
+    download_status = download_pdf(url, directory = '../data/temp/', temp = True)
     print("Now on:", url)
     print("DL:", download_status)
     if download_status in ['Download: Failed', 'Not a PDF']:
         return download_status
-    text = convert_pdf_to_txt('./data/temp/temp.pdf', maxpages, sample_base,
+    text = convert_pdf_to_txt('../data/temp/temp.pdf', maxpages, sample_base,
 														random_sample_size)
     if text == 'Failed':
         print("Scrape: Failed")
@@ -137,19 +137,19 @@ def is_fillable_page(page):
 	'''
 	Helper function used to indicate whether a page is fillable.
 	'''
-    assert isinstance( page, PDFPage ), 'This is not a PDFPage.'
-    if isinstance( page.annots, PDFObjRef ):
-        for annot in page.annots.resolve():
-            if isinstance( annot, PDFObjRef ):
-                annot = annot.resolve()
-                if 'Subtype' in annot and annot['Subtype'].name == 'Widget' and\
+	assert isinstance( page, PDFPage ), 'This is not a PDFPage.'
+	if isinstance( page.annots, PDFObjRef ):
+		for annot in page.annots.resolve():
+			if isinstance( annot, PDFObjRef ):
+				annot = annot.resolve()
+				if 'Subtype' in annot and annot['Subtype'].name == 'Widget' and\
 				                          annot['FT'].name in ['Tx','Ch','Btn']:
-                    return True
-                else:
-                    return False
-            else:
-                raise Exception( "Unknown Object")
-    return False
+					return True
+				else:
+					return False
+			else:
+				raise Exception( "Unknown Object")
+	return False
 
 
 def is_fillable_pdf(path, maxpages = 0):
@@ -157,18 +157,18 @@ def is_fillable_pdf(path, maxpages = 0):
 	Takes a PDF and indicates whether the scraped pages are fillable. Set
 	maxpages to check the first couple of pages from the beginning of the PDF.
 	'''
-    fp = open(path, 'rb')
-    try:
-        pages = list(PDFPage.get_pages(fp, maxpages = maxpages))
-        for page in pages:
-            if is_fillable_page(page) == True:
-                fp.close()
-                return "Fillable PDF."
-        fp.close()
-        return "Not a fillable PDF."
-    except Exception as e:
-        print(e)
-        return "Fillable Check: Failed"
+	fp = open(path, 'rb')
+	try:
+		pages = list(PDFPage.get_pages(fp, maxpages = maxpages))
+		for page in pages:
+			if is_fillable_page(page) == True:
+				fp.close()
+				return "Fillable PDF."
+		fp.close()
+		return "Not a fillable PDF."
+	except Exception as e:
+		print(e)
+		return "Fillable Check: Failed"
 
 
 def current_time_str():
@@ -179,5 +179,5 @@ def current_time_str():
 	now = datetime.now()
 	current_time_list = [str(now.month), str(now.day),
 						 str(now.hour), str(now.minute)]
-    current_time = '_'.join(current_time_list)
-    return current_time
+	current_time = '_'.join(current_time_list)
+	return current_time
