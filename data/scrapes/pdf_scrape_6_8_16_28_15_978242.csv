@@ -1,0 +1,11 @@
+pdf_id`pdf_url`dl_status`scrape_status`num_pages`num_pages_scraped`is_fillable`text
+12786`https://www.cityofchicago.org/content/dam/city/progs/env/EnergyBenchmark/2017_Chicago_Benchmarking_Residential_Guidance.pdf`Error`too many values to unpack (expected 2)
+1647`https://www.cityofchicago.org/content/dam/city/depts/mayor/Restaurant/QuickGuideSpanish7182013.pdf`Error`too many values to unpack (expected 2)
+21896`https://www.cityofchicago.org/content/dam/city/depts/mayor/Office%20of%20New%20Americans/PDFs/SanctuaryCitiesFAQs.pdf`Error`too many values to unpack (expected 2)
+8615`https://www.cityofchicago.org/content/dam/city/depts/obm/supp_info/2014%20Budget/2014BudgetHearingMaterials/CCHR2014_BudgetHearingMaterials_FINAL.pdf`Error`too many values to unpack (expected 2)
+8821`https://www.cityofchicago.org/content/dam/city/depts/obm/supp_info/2015Budget/Budget_Hearing_Statements_MBE_WBE_Org/039_MBE_WBE_Org.pdf`Error`too many values to unpack (expected 2)
+9280`https://www.cityofchicago.org/content/dam/city/depts/obm/supp_info/2017%20Budget/DepartmentStatements/OBMStatement2017.pdf`Error`too many values to unpack (expected 2)
+21480`https://www.cityofchicago.org/content/dam/city/depts/obm/supp_info/Quarterly Budget Report/2012-q3-report.pdf`Error`too many values to unpack (expected 2)
+12161`https://www.cityofchicago.org/content/dam/city/depts/obm/supp_info/2017%20Budget/2017BudgetOrdinance.pdf`Error`too many values to unpack (expected 2)
+9047`https://www.cityofchicago.org/content/dam/city/depts/obm/supp_info/2016Budget/DepartmentResponses/All_Responses_DPS.pdf`Error`too many values to unpack (expected 2)
+8324`https://www.cityofchicago.org/content/dam/city/depts/obm/supp_info/2013%20Budget/2013BudgetHearingMaterials/AnimalCare_Responses2013.pdf`Error`too many values to unpack (expected 2)
