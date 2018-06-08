@@ -20,7 +20,7 @@ class PDFPipeline(object):
 	urls. Pipeline includes ability to load scraped data into a database.
 	Specify the database to connect to with a "credentials.json".
 	'''
-	def __init__(self, pdf_links, limit=None, creds = 'credentials.json'):
+	def __init__(self, pdf_links, limit=None, creds = '../credentials.json'):
 		self.db_conn = DBConnection(creds)
 		self.db_conn.connect()
 		self.scrape_filename = None

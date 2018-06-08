@@ -41,6 +41,8 @@ def convert_pdf_to_txt(path, maxpages = 0, sample_base = 0, random_sample_size =
 	beginning of the document and the option to take a sample set from the
 	remaining pages.
 	'''
+	assert(sample_base + random_sample_size <= maxpages, '''Max pages should be
+				greater than the sum of sample_base and random_sample_size.''')
     try:
         rsrcmgr = PDFResourceManager()
         retstr = StringIO()
