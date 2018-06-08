@@ -62,11 +62,16 @@ class PDFPipeline(object):
 				print(url)
 				try:
 					dl_status = pu.download_pdf(url, directory = '../data/temp/',
-												  temp = True)
+												  					temp = True)
 					if dl_status == 'Success':
 						fillable = pu.is_fillable_pdf(path, maxpages)
-						text, scrape_status = pu.convert_pdf_to_txt(path, maxpages,
+						try:
+							text, scrape_status = pu.convert_pdf_to_txt(path, maxpages,
 															base, random_sample)
+						except TimeoutError:
+							print("Timed out, going to next one.")
+							writer.writerow([pdf_id, url, 'Error', e])
+							continue
 						num_pages = pu.pdf_num_pages(path = path)
 						if num_pages < maxpages:
 							num_pages_scraped = num_pages

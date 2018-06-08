@@ -8,6 +8,7 @@ import urllib
 import pandas as pd
 import os
 from datetime import datetime
+import timeout-decorator
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.pdfparser import PDFParser
@@ -34,6 +35,7 @@ def pdf_num_pages(open_pdf = None, path = None):
 		print(e)
 		return None
 
+@timeout_decorator.timeout(25)
 def convert_pdf_to_txt(path, maxpages = 0, sample_base = 0, random_sample_size = 0):
     '''
 	Scrape text data from a PDF with the ability to set a max number of pages,
