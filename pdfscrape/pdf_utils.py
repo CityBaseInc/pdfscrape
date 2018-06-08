@@ -8,7 +8,7 @@ import urllib
 import pandas as pd
 import os
 from datetime import datetime
-import timeout-decorator
+import timeout_decorator
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import TextConverter
 from pdfminer.pdfparser import PDFParser
@@ -35,7 +35,7 @@ def pdf_num_pages(open_pdf = None, path = None):
 		print(e)
 		return None
 
-@timeout_decorator.timeout(25)
+@timeout_decorator.timeout(10)
 def convert_pdf_to_txt(path, maxpages = 0, sample_base = 0, random_sample_size = 0):
     '''
 	Scrape text data from a PDF with the ability to set a max number of pages,
@@ -43,8 +43,6 @@ def convert_pdf_to_txt(path, maxpages = 0, sample_base = 0, random_sample_size =
 	beginning of the document and the option to take a sample set from the
 	remaining pages.
 	'''
-	assert(sample_base + random_sample_size <= maxpages, '''Max pages should be
-				greater than the sum of sample_base and random_sample_size.''')
     try:
         rsrcmgr = PDFResourceManager()
         retstr = StringIO()
@@ -112,7 +110,7 @@ def download_pdf(url, directory = './data/', temp = False):
             file_name = split_path[-1]
             file_name = file_name.replace('%20','_')
             urllib.request.urlretrieve(url, directory + file_name)
-        return 'Success'
+        return directory + file_name, 'Success'
     except Exception as e:
         print(e)
         return 'Failed'
@@ -175,13 +173,18 @@ def is_fillable_pdf(path, maxpages = 0):
 		return "Fillable Check: Failed"
 
 
-def current_time_str():
+def current_time_str(extended=False):
 	'''
 	Helper function to get the time and date, used for filenames to prevent
 	overwriting.
 	'''
 	now = datetime.now()
-	current_time_list = [str(now.month), str(now.day),
+	if extended:
+		current_time_list = [str(now.month), str(now.day),
+							 str(now.hour), str(now.minute),
+							 str(now.second), str(now.microsecond)]
+	else:
+		current_time_list = [str(now.month), str(now.day),
 						 str(now.hour), str(now.minute)]
 	current_time = '_'.join(current_time_list)
 	return current_time

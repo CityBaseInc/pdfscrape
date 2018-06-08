@@ -20,7 +20,7 @@ class PDFPipeline(object):
 	urls. Pipeline includes ability to load scraped data into a database.
 	Specify the database to connect to with a "credentials.json".
 	'''
-	def __init__(self, pdf_links, limit=None, creds = '../credentials.json'):
+	def __init__(self, pdf_links, limit=None, creds = 'credentials.json'):
 		self.db_conn = DBConnection(creds)
 		self.db_conn.connect()
 		self.scrape_filename = None
@@ -31,7 +31,7 @@ class PDFPipeline(object):
 		self.num_pdfs = len(self.pdfurls)
 
 
-	def scrape_pdfs(self, maxpages, base, random_sample, sep = ','):
+	def scrape_pdfs(self, maxpages, base, random_sample, sep = ',',multi=False):
 		'''
 		Downloads and scrapes information from each PDF, allowing to specify the
 		max number of pages to scrape, how many to scrape from the beginning of
@@ -47,9 +47,11 @@ class PDFPipeline(object):
 			- is_fillable - indicates whether any pages in PDF are fillable
 			- text - the text scraped from each of the scraped pages
 		'''
-		path = '../data/temp/temp.pdf'
+		counter = 0
+		path = 'data/temp/temp.pdf'
 		pdfs = self.pdfurls[['pdf_id','pdf_url']].values.tolist()
-		scrape_file = '../data/scrapes/pdf_scrape_' + pu.current_time_str() + '.csv'
+		totalpdfs = len(pdfs)
+		scrape_file = 'data/scrapes/pdf_scrape_' + pu.current_time_str(extended=multi) + '.csv'
 		self.scrape_file = scrape_file
 		with open(scrape_file, "w", newline='\n') as f:
 			writer = csv.writer(f, delimiter = sep)
@@ -57,23 +59,23 @@ class PDFPipeline(object):
 							 'num_pages','num_pages_scraped','is_fillable',
 							 'text'])
 			for pdf in pdfs:
+				counter += 1
 				pdf_id = pdf[0]
 				url = pdf[1]
-				print(url)
+				print("{} of {} -- ".format(counter, totalpdfs), url)
 				try:
-					dl_status = pu.download_pdf(url, directory = '../data/temp/',
-												  					temp = True)
+					if multi:
+						path, dl_status = pu.download_pdf(url, directory = 'data/temp/',
+																			temp = False)
+					else:
+						dl_status = pu.download_pdf(url, directory = 'data/temp/',
+												  						temp = True)
 					if dl_status == 'Success':
 						fillable = pu.is_fillable_pdf(path, maxpages)
-						try:
-							text, scrape_status = pu.convert_pdf_to_txt(path, maxpages,
+						text, scrape_status = pu.convert_pdf_to_txt(path, maxpages,
 															base, random_sample)
-						except TimeoutError:
-							print("Timed out, going to next one.")
-							writer.writerow([pdf_id, url, 'Error', e])
-							continue
 						num_pages = pu.pdf_num_pages(path = path)
-						if num_pages < maxpages:
+						if num_pages and num_pages < maxpages:
 							num_pages_scraped = num_pages
 						else:
 							num_pages_scraped = maxpages
@@ -81,7 +83,8 @@ class PDFPipeline(object):
 						 				 num_pages, num_pages_scraped, fillable,
 										 text])
 					else:
-						writer.writerow([None]*8)
+						writer.writerow([pdf_id, url, dl_status, None, None,
+											None, None, None])
 
 				except Exception as e:
 					print(e)

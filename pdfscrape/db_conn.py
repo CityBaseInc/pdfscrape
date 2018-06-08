@@ -32,6 +32,17 @@ class DBConnection(object):
         self.database = creds["database"]
         self.conn = None
 
+    def __repr__(self):
+        return '''
+                  "hostname"] = {}
+                  "username"] = {}
+                  "password"] = {}
+                  "database"] = {}
+               '''.format(self.hostname,
+                          self.username,
+                          self.password,
+                          self.database)
+
 
     def connect(self):
         '''
