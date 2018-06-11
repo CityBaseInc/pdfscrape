@@ -3,7 +3,7 @@ PDFPipeline is a class to manage the scraping and processing of PDF documents.
 
 @author: Vidal Anguiano Jr.
 '''
-
+import os
 import urllib
 import pandas as pd
 import csv
@@ -53,6 +53,9 @@ class PDFPipeline(object):
 		totalpdfs = len(pdfs)
 		scrape_file = 'data/scrapes/pdf_scrape_' + pu.current_time_str(extended=multi) + '.csv'
 		self.scrape_file = scrape_file
+		if multi:
+			folder_name = 'multi_run_' + pu.current_time_str()
+			scrape_file = 'data/scrapes/' + folder_name + '/multi_' + pu.current_time_str(extended=multi) + '.csv'
 		with open(scrape_file, "w", newline='\n') as f:
 			writer = csv.writer(f, delimiter = sep)
 			writer.writerow(['pdf_id','pdf_url','dl_status','scrape_status',
@@ -75,6 +78,7 @@ class PDFPipeline(object):
 						text, scrape_status = pu.convert_pdf_to_txt(path, maxpages,
 															base, random_sample)
 						num_pages = pu.pdf_num_pages(path = path)
+						os.unlink(path)
 						if num_pages and num_pages < maxpages:
 							num_pages_scraped = num_pages
 						else:
@@ -85,6 +89,7 @@ class PDFPipeline(object):
 					else:
 						writer.writerow([pdf_id, url, dl_status, None, None,
 											None, None, None])
+						os.unlink(path)
 
 				except Exception as e:
 					print(e)

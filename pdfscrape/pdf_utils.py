@@ -35,7 +35,7 @@ def pdf_num_pages(open_pdf = None, path = None):
 		print(e)
 		return None
 
-@timeout_decorator.timeout(10)
+@timeout_decorator.timeout(20)
 def convert_pdf_to_txt(path, maxpages = 0, sample_base = 0, random_sample_size = 0):
     '''
 	Scrape text data from a PDF with the ability to set a max number of pages,
