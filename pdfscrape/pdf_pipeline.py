@@ -64,7 +64,7 @@ def scrape_pdfs(pdflink_q, maxpages, base, random_sample, to_scrape,
             else:
                 continue
             pdf_id = counter
-            #url = pdflink_q.get()
+            url = pdflink_q.get()
             counter += 1
 
             try:
