@@ -14,7 +14,7 @@ from pdfscrape import pdf_utils as pu
 
 
 def scrape_pdfs(pdflink_q, maxpages, base, random_sample, to_scrape,
-                scrape_file, temp_name, kill_switch, final=False, nlp=None):
+                scrape_file, temp_name, final=False, nlp=None):
     '''
     Downloads and scrapes information from each PDF, allowing to specify the
     max number of pages to scrape, how many to scrape from the beginning of
