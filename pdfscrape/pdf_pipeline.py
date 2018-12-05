@@ -21,7 +21,7 @@ def scrape_pdfs(pdflink_q, maxpages, base, random_sample, to_scrape,
     the document, and how many pages to take as a random sample from the
     rest of the document. The data are exported as a csv with the following
     columns:
-        - pdf_id - unique identifier for the pdf document
+       - pdf_id - unique identifier for the pdf document
         - pdf_url - url for the PDF
         - dl_status - indicator of whether PDF downloaded successfully
         - scrape_status - indicator of whether the PDF scraped successfully
@@ -43,7 +43,7 @@ def scrape_pdfs(pdflink_q, maxpages, base, random_sample, to_scrape,
         - nlp: pycorenlp instance created to connect to Stanford CoreNLP server
     '''
     counter = 0
-    sep = ','
+    sep = '`'
     path = './data/temp/' + temp_name
     with open(scrape_file, "w", newline='\n') as f:
         writer = csv.writer(f, delimiter = sep)
@@ -64,7 +64,7 @@ def scrape_pdfs(pdflink_q, maxpages, base, random_sample, to_scrape,
             else:
                 continue
             pdf_id = counter
-            url = pdflink_q.get()
+            #url = pdflink_q.get()
             counter += 1
 
             try:
