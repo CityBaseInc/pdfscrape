@@ -21,7 +21,7 @@ def scrape_pdfs(pdflink_q, maxpages, base, random_sample, to_scrape,
     the document, and how many pages to take as a random sample from the
     rest of the document. The data are exported as a csv with the following
     columns:
-       - pdf_id - unique identifier for the pdf document
+        - pdf_id - unique identifier for the pdf document
         - pdf_url - url for the PDF
         - dl_status - indicator of whether PDF downloaded successfully
         - scrape_status - indicator of whether the PDF scraped successfully
@@ -60,78 +60,94 @@ def scrape_pdfs(pdflink_q, maxpages, base, random_sample, to_scrape,
         while True:
             if pdflink_q.qsize() != 0:
                 url = pdflink_q.get()
-                print("SCRAPING PDF URL:", url)
+                print("LINKS_REMAINING:", pdflink_q.qsize())
+                print('SCRAPING...', url)
             else:
+                #print("STUCK")
                 continue
             pdf_id = counter
-            #url = pdflink_q.get()
+            url = pdflink_q.get()
+            print("SCRAPING PDF URL:", url)
+            print("LINKS_REMAINING:", pdflink_q.qsize())
             counter += 1
             print('COUNTER:', counter)
 
-
-            try:
-                dl_status = pu.download_pdf(url, directory = './data/temp/',
-                                            temp = True, temp_name= temp_name)
-
-                if dl_status == 'Success':
-                    fillable = pu.is_fillable_pdf(path, maxpages)
-                    text, scrape_status = pu.convert_pdf_to_txt(path, maxpages,
-                                                                base, random_sample)
-                    num_pages = pu.pdf_num_pages(path = path)
-                    os.unlink(path)
-
-                    if num_pages and num_pages < maxpages:
-                        num_pages_scraped = num_pages
-
-                    else:
-                        num_pages_scraped = maxpages
-
-                    if nlp:
-                        try:
-                            nlp_res = nlp.annotate(text, properties={'annotators': 'ner',
-                                                                    'outputFormat': 'json'})
-                            result = nlp_res['sentences'][0]['entitymentions']
-                        except:
-                            result = None
-                    else:
-                        result = None
-
-                    writer.writerow([pdf_id,
-                                     url,
-                                     dl_status,
-                                     scrape_status,
-                                     num_pages,
-                                     num_pages_scraped,
-                                     fillable,
-                                     text,
-                                     result])
-                    print("SUCCESS")
-
-                else:
-                    writer.writerow([pdf_id,
-                                     url,
-                                     dl_status,
-                                     None,
-                                     None,
-                                     None,
-                                     None,
-                                     None,
-                                     None])
-                    os.unlink(path)
-                    print("FAILED")
-
-            except Exception as e:
-                print(e)
-                writer.writerow([pdf_id, url, 'Error', e])
-                print("FAILED")
+            scrape_and_write(pdf_id,
+                             url,
+                             path,
+                             writer,
+                             temp_name,
+                             maxpages,
+                             base,
+                             random_sample,
+                             nlp)
 
             if counter >= to_scrape or (counter > 0 and pdflink_q.qsize() == 0):
+                print("BREAKING!")
                 break
 
     if final:
         while not pdflink_q.empty():
             pdflink_q.get()
+        pdflink_q.close()
         print("pdflink_q is EMPTY.")
 
 
+def scrape_and_write(pdf_id, url, path, writer, temp_name,
+                     maxpages, base, random_sample, nlp):
+    try:
+        dl_status = pu.download_pdf(url, directory = './data/temp/',
+                                temp = True, temp_name= temp_name)
+
+        if dl_status == 'Success':
+            fillable = pu.is_fillable_pdf(path, maxpages)
+            text, scrape_status = pu.convert_pdf_to_txt(path, maxpages,
+                                                        base, random_sample)
+            num_pages = pu.pdf_num_pages(path = path)
+            os.unlink(path)
+
+            if num_pages and num_pages < maxpages:
+                num_pages_scraped = num_pages
+
+            else:
+                num_pages_scraped = maxpages
+
+            if nlp:
+                try:
+                    nlp_res = nlp.annotate(text, properties={'annotators': 'ner',
+                                                            'outputFormat': 'json'})
+                    result = nlp_res['sentences'][0]['entitymentions']
+                except:
+                    result = None
+            else:
+                result = None
+
+            writer.writerow([pdf_id,
+                                url,
+                                dl_status,
+                                scrape_status,
+                                num_pages,
+                                num_pages_scraped,
+                                fillable,
+                                text,
+                                result])
+            print("SUCCESS")
+
+        else:
+            writer.writerow([pdf_id,
+                                url,
+                                dl_status,
+                                None,
+                                None,
+                                None,
+                                None,
+                                None,
+                                None])
+            os.unlink(path)
+            print("FAILED")
+
+    except Exception as e:
+        print(e)
+        writer.writerow([pdf_id, url, 'Error', e])
+        print("FAILED")
 
