@@ -12,5 +12,11 @@ setup(name='pdfscrape',
       url='ssh://github.com/CityBaseInc/pdfscrape',
       maintainer_email='vanguiano@thecitybase.com',
       packages=['pdfscrape'],
+      install_requires=[
+          'timeout_decorator',
+          'pandas',
+          'pdfminer.six',
+          'nltk',
+      ],
       long_description=open('README.md').read() if exists('README.md') else ''
       )
