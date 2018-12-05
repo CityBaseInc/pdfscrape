@@ -43,6 +43,7 @@ def scrape_pdfs(pdflink_q, maxpages, base, random_sample, to_scrape,
         - nlp: pycorenlp instance created to connect to Stanford CoreNLP server
     '''
     counter = 0
+    print('COUNTER:', counter)
     sep = '`'
     path = './data/temp/' + temp_name
     with open(scrape_file, "w", newline='\n') as f:
