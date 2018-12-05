@@ -84,12 +84,14 @@ def scrape_pdfs(pdflink_q, maxpages, base, random_sample, to_scrape,
                     else:
                         num_pages_scraped = maxpages
 
-                    try:
-                        nlp_res = nlp.annotate(text, properties={'annotators': 'ner',
-                                                                 'outputFormat': 'json'})
-                        result = nlp_res['sentences'][0]['entitymentions']
-
-                    except:
+                    if nlp:
+                        try:
+                            nlp_res = nlp.annotate(text, properties={'annotators': 'ner',
+                                                                    'outputFormat': 'json'})
+                            result = nlp_res['sentences'][0]['entitymentions']
+                        except:
+                            result = None
+                    else:
                         result = None
 
                     writer.writerow([pdf_id,
