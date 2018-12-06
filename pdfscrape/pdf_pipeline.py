@@ -14,7 +14,7 @@ from pdfscrape import pdf_utils as pu
 
 
 def scrape_pdfs(pdflink_q, maxpages, base, random_sample, to_scrape,
-                scrape_file, temp_name, final=False, nlp=None):
+                scrape_file, temp_name, kill_switch, final=False, nlp=None):
     '''
     Downloads and scrapes information from each PDF, allowing to specify the
     max number of pages to scrape, how many to scrape from the beginning of
@@ -39,6 +39,7 @@ def scrape_pdfs(pdflink_q, maxpages, base, random_sample, to_scrape,
         - to_scrape (int): number of pdf files to scrape before while loop break
         - scrape_file (str): name of file to be written by resulting scrape
         - temp_name (str): name of temporary pdf file downloaded to be replaced
+        - kill_switch (Value): indicates when webscraper is done scraping
         - final (bool): flag for instructing whether pdflink_q should be purged
         - nlp: pycorenlp instance created to connect to Stanford CoreNLP server
     '''
@@ -48,6 +49,7 @@ def scrape_pdfs(pdflink_q, maxpages, base, random_sample, to_scrape,
     with open(scrape_file, "w", newline='\n') as f:
         writer = csv.writer(f, delimiter = sep)
         writer.writerow(['pdf_id',
+                         'from_page',
                          'pdf_url',
                          'dl_status',
                          'scrape_status',
@@ -58,42 +60,42 @@ def scrape_pdfs(pdflink_q, maxpages, base, random_sample, to_scrape,
                          'nlp'])
 
         while True:
-            if pdflink_q.qsize() != 0:
-                url = pdflink_q.get()
+            if pdflink_q.qsize() != 0 and counter < to_scrape:
+                pdf_id = counter
+                from_queue = pdflink_q.get()
+                from_page, url = from_queue[0], from_queue[1]
+                print("SCRAPING PDF URL:", url)
                 print("LINKS_REMAINING:", pdflink_q.qsize())
-                print('SCRAPING...', url)
-            else:
-                #print("STUCK")
-                continue
-            pdf_id = counter
-            url = pdflink_q.get()
-            print("SCRAPING PDF URL:", url)
-            print("LINKS_REMAINING:", pdflink_q.qsize())
-            counter += 1
-            print('COUNTER:', counter)
 
-            scrape_and_write(pdf_id,
-                             url,
-                             path,
-                             writer,
-                             temp_name,
-                             maxpages,
-                             base,
-                             random_sample,
-                             nlp)
+                scrape_and_write(pdf_id,
+                                from_page,
+                                url,
+                                path,
+                                writer,
+                                temp_name,
+                                maxpages,
+                                base,
+                                random_sample,
+                                nlp)
+                counter += 1
 
-            if counter >= to_scrape or (counter > 0 and pdflink_q.qsize() == 0):
+            elif counter >= to_scrape or (kill_switch.value == 1 and
+                                          pdflink_q.qsize() == 0):
                 print("BREAKING!")
                 break
+            else:
+                continue
 
     if final:
         while not pdflink_q.empty():
             pdflink_q.get()
         pdflink_q.close()
+        print("COUNTER:", counter)
+        print(final)
         print("pdflink_q is EMPTY.")
 
 
-def scrape_and_write(pdf_id, url, path, writer, temp_name,
+def scrape_and_write(pdf_id, from_page, url, path, writer, temp_name,
                      maxpages, base, random_sample, nlp):
     try:
         dl_status = pu.download_pdf(url, directory = './data/temp/',
@@ -115,7 +117,7 @@ def scrape_and_write(pdf_id, url, path, writer, temp_name,
             if nlp:
                 try:
                     nlp_res = nlp.annotate(text, properties={'annotators': 'ner',
-                                                            'outputFormat': 'json'})
+                                                             'outputFormat': 'json'})
                     result = nlp_res['sentences'][0]['entitymentions']
                 except:
                     result = None
@@ -123,6 +125,7 @@ def scrape_and_write(pdf_id, url, path, writer, temp_name,
                 result = None
 
             writer.writerow([pdf_id,
+                                from_page,
                                 url,
                                 dl_status,
                                 scrape_status,
@@ -135,6 +138,7 @@ def scrape_and_write(pdf_id, url, path, writer, temp_name,
 
         else:
             writer.writerow([pdf_id,
+                                from_page,
                                 url,
                                 dl_status,
                                 None,
@@ -148,6 +152,6 @@ def scrape_and_write(pdf_id, url, path, writer, temp_name,
 
     except Exception as e:
         print(e)
-        writer.writerow([pdf_id, url, 'Error', e])
+        writer.writerow([pdf_id, from_page, url, 'Error', e])
         print("FAILED")
 
